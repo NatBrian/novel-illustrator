@@ -32,7 +32,7 @@ Build a production manifest tracking every unit:
 `Unit ID | Chapter/Section | Reading Order | Source Boundaries | Summary | Characters & Locations | Key Events | Assigned Agents | Status`
 
 ### Phase 2: Art Direction & Confirmation Gate
-1. **Infer style from the novel** (genre, tone, era, setting, realism, perspective) unless the user specifies a target device/style.
+1. **Infer style & medium from the novel** (genre, tone, era, setting, realism, narrative voice) or user preference—choosing the fitting visual style (e.g., realistic, anime/manga, stylized/cartoon, gritty dystopian, gothic horror ink, painterly, etc.) rather than forcing a single default style or generic genre clichés.
 2. **Confirm scope & target with the user** before generating images:
    - Target chapters (all units or specific range/skips).
    - Output profile: **Kindle Paperwhite / E-Ink** (`1072x1448` 3:4 portrait, 8-bit grayscale high-contrast ink & wash — see [art-direction-eink.md](./references/art-direction-eink.md)) or **Standard Color EPUB** (`--color` in `compile_epub.py`).
