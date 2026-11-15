@@ -35,7 +35,7 @@ Build a production manifest tracking every unit:
 1. **Infer style & medium from the novel** (genre, tone, era, setting, realism, narrative voice) or user preference—choosing the fitting visual style (e.g., realistic, anime/manga, stylized/cartoon, gritty dystopian, gothic horror ink, painterly, etc.) rather than forcing a single default style or generic genre clichés.
 2. **Confirm scope & target with the user** before generating images:
    - Target chapters (all units or specific range/skips).
-   - Output profile: **Kindle Paperwhite / E-Ink** (`1072x1448` 3:4 portrait, 8-bit grayscale — see [art-direction-eink.md](./references/art-direction-eink.md)) or **Standard Color EPUB** (`--color` in `compile_epub.py`). **Default placement is always 1 dedicated fullscreen illustration page after each chapter.**
+   - Output profile **(default: Kindle Paperwhite 7th Gen E-Ink)**: `1072x1448` 3:4 portrait, 8-bit grayscale high-contrast rendering (see [art-direction-eink.md](./references/art-direction-eink.md)). Only use `--color` in `compile_epub.py` if the user explicitly asks for color. **Default placement is always 1 dedicated fullscreen illustration page after each chapter.**
    - **Mandatory pilot gate:** Always generate the first **3** target chapters first, share their file paths with the user, and wait for user approval before generating the remaining chapters.
 
 ### Phase 3: Narrative Analysis, 4-Scene Selection & Quote Verification
