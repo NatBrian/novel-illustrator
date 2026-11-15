@@ -35,18 +35,19 @@ Build a production manifest tracking every unit:
 1. **Infer style & medium from the novel** (genre, tone, era, setting, realism, narrative voice) or user preference—choosing the fitting visual style (e.g., realistic, anime/manga, stylized/cartoon, gritty dystopian, gothic horror ink, painterly, etc.) rather than forcing a single default style or generic genre clichés.
 2. **Confirm scope & target with the user** before generating images:
    - Target chapters (all units or specific range/skips).
-   - Output profile: **Kindle Paperwhite / E-Ink** (`1072x1448` 3:4 portrait, 8-bit grayscale high-contrast ink & wash — see [art-direction-eink.md](./references/art-direction-eink.md)) or **Standard Color EPUB** (`--color` in `compile_epub.py`).
-   - **Pilot gate:** Generate and get user approval on the first **3** target chapters before scaling to the full book.
+   - Output profile: **Kindle Paperwhite / E-Ink** (`1072x1448` 3:4 portrait, 8-bit grayscale — see [art-direction-eink.md](./references/art-direction-eink.md)) or **Standard Color EPUB** (`--color` in `compile_epub.py`). **Default placement is always 1 dedicated fullscreen illustration page after each chapter.**
+   - **Mandatory pilot gate:** Always generate the first **3** target chapters first, share their file paths with the user, and wait for user approval before generating the remaining chapters.
 
 ### Phase 3: Narrative Analysis, 4-Scene Selection & Quote Verification
 For each unit (in isolated chapter context):
 1. Select **4 complementary visual beats** representing actual events, character interactions, discoveries, objects, or setting shifts (never repeat the same scene; never invent events for short chapters).
 2. Vary **layout** (do not force every page into a rigid 2×2 grid—use `1 large + 3 small`, `2 large + 2 small`, mixed horizontal/vertical, or asymmetric editorial layouts) and **camera framing** (wide, medium, close-up, over-the-shoulder, action, environmental).
 3. Produce a per-panel evidence record (`Panel | Scene | Supporting source passage | Confirmed details | Unknown details`) and update the progressive visual reference guide (characters, clothing, physical state, locations, objects).
-4. Compile `work/image_briefs.json` and verify **0 quote mismatches** before generating images:
+4. Compile `work/image_briefs.json` (each entry with `unit_id`, `title`, `part_file` matching `chapters_raw.json` keys, and 4 `panels` each with `quote`) and verify **0 quote mismatches** before generating images:
 ```bash
 python scripts/verify_quotes.py --chapters work/chapters_raw.json --briefs work/image_briefs.json
 ```
+Record QC-approved image paths in `work/approved_images.json` as `{"U-01": "/abs/path/to/illus_u01.jpg", ...}` for `compile_epub.py`.
 
 ### Phase 4–6: Batched Image Generation & Independent QC
 - Respect delegation/subagent concurrency limits (e.g., max **3** `image-generator` subagents in parallel; wait for all 3 to finish before launching the next batch).
