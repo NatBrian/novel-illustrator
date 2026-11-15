@@ -9,74 +9,82 @@ description: >-
 
 # EPUB Novel Illustrator
 
-Transform an EPUB novel into a source-faithful illustrated EPUB with **one 4-panel illustration per target chapter**, placed on its own dedicated fullscreen page after each chapter.
+Transform an EPUB novel into a source-faithful illustrated EPUB with **one 4-panel illustration per chapter or meaningful narrative section**, placed on its own dedicated fullscreen page after each unit.
 
-**Core principle:** Narrative accuracy and source fidelity take precedence over visual spectacle. Never invent unsupported details or leak future plot spoilers.
+**Core priority:** Narrative accuracy and source fidelity take precedence over visual spectacle. **Do not begin image generation before inspecting the EPUB and planning the full workflow.**
 
 ## Non-Negotiable Rules
 
-1. **Source fidelity & no unsupported invention:** Classify every visual detail as `CONFIRMED` (explicitly in text), `INTERPRETED` (conservative choice consistent with text), or `UNKNOWN` (do not invent). Never substitute generic genre tropes for actual scene events.
-2. **Spoiler prevention (progressive references):** Chapter *N* briefs may use details established in Chapters `1..N` only—never future appearances, relationships, locations, or revelations.
-3. **Original content immutability:** Never rewrite, shorten, reorder, or alter original chapter text, metadata, CSS, or TOC navigation. Only add illustration images, dedicated illustration XHTML pages, and the OPF `<manifest>`/`<spine>` entries needed to display them.
-4. **Zero text in artwork:** Unless explicitly required by the brief, panels must contain **no speech bubbles, captions, sound effects, labels, or watermarks**.
+1. **Source fidelity & no unsupported invention:** Classify every visual detail as `CONFIRMED` (explicitly in text), `INTERPRETED` (conservative choice consistent with text), or `UNKNOWN` (do not invent). Never substitute generic genre clichés (spaceships, holograms, castles, neon, monsters) for actual story events.
+2. **Strict spoiler prevention & agent isolation:** Chapter *N* briefs may use details established in Chapters `1..N` only. Simply telling subagents to ignore future chapters is insufficient—pass **only** the isolated chapter excerpt and the progressive visual reference log up to `N-1`.
+3. **Original content immutability:** Never rewrite, shorten, summarize, translate, reorder, or alter original chapter text, formatting, CSS, metadata, or TOC navigation. Only add illustration images, dedicated illustration XHTML pages, and OPF `<manifest>`/`<spine>` entries.
+4. **Zero extraneous text in artwork:** Unless required by the story, panels must contain **no speech bubbles, dialogue, caption boxes, sound effects, labels, or watermarks**.
 
 ## Workflow
 
-### Phase 1: EPUB Inspection & Chapter Inventory
+### Phase 1: EPUB Inspection & Production Manifest
 Run [inspect_epub.py](./scripts/inspect_epub.py) on the input `.epub`:
 ```bash
 python scripts/inspect_epub.py "<input.epub>" --out-dir ./work
 ```
-This extracts `work/spine_summary.json` and `work/chapters_raw.json` without modifying the source EPUB.
-- Do not assume 1 XHTML file = 1 chapter; inspect headings and boundaries to distinguish front matter, part dividers, and narrative chapters.
-- Build a production manifest mapping each `unit_id` (`U-01`, `U-02`, ...) to its exact title, `part_file`, reading order, and status.
+Examine EPUB version, OPF metadata/manifest/spine, TOC navigation, CSS, headings, and reading order. Do not assume 1 XHTML file = 1 chapter.
+Build a production manifest tracking every unit:
+`Unit ID | Chapter/Section | Reading Order | Source Boundaries | Summary | Characters & Locations | Key Events | Assigned Agents | Status`
 
-### Phase 2: Art Direction & User Confirmation Gate
-Before generating images, confirm with the user:
-1. **Target chapters** (all chapters, or a subset/skip range).
-2. **Target device & style** (default: **Kindle Paperwhite 7th Gen** — `1072x1448` 3:4 portrait, 300 ppi, 16-level grayscale high-contrast ink & wash). See [art-direction-eink.md](./references/art-direction-eink.md).
-3. **Pilot batch approval:** Generate the first **3** chapters (`U-01`–`U-03`, or first 3 active chapters) and get user approval before scaling.
+### Phase 2: Art Direction & Confirmation Gate
+1. **Infer style from the novel** (genre, tone, era, setting, realism, perspective) unless the user specifies a target device/style.
+2. **Confirm scope & target with the user** before generating images:
+   - Target chapters (all units or specific range/skips).
+   - Output profile: **Kindle Paperwhite / E-Ink** (`1072x1448` 3:4 portrait, 8-bit grayscale high-contrast ink & wash — see [art-direction-eink.md](./references/art-direction-eink.md)) or **Standard Color EPUB** (`--color` in `compile_epub.py`).
+   - **Pilot gate:** Generate and get user approval on the first **3** target chapters before scaling to the full book.
 
-### Phase 3: Narrative Analysis & Verbatim Quote Verification
-For each target chapter:
-- Read **only** that chapter's text (plus the progressive visual reference log up to chapter `N-1`).
-- Select **4 complementary visual beats** representing actual events, character interactions, discoveries, or setting shifts.
-- Record a **verbatim supporting quote** from `chapters_raw.json` for every panel, and update the progressive visual reference guide.
-- Compile `work/image_briefs.json` and verify **0 quote mismatches** before generating any images:
+### Phase 3: Narrative Analysis, 4-Scene Selection & Quote Verification
+For each unit (in isolated chapter context):
+1. Select **4 complementary visual beats** representing actual events, character interactions, discoveries, objects, or setting shifts (never repeat the same scene; never invent events for short chapters).
+2. Vary **layout** (do not force every page into a rigid 2×2 grid—use `1 large + 3 small`, `2 large + 2 small`, mixed horizontal/vertical, or asymmetric editorial layouts) and **camera framing** (wide, medium, close-up, over-the-shoulder, action, environmental).
+3. Produce a per-panel evidence record (`Panel | Scene | Supporting source passage | Confirmed details | Unknown details`) and update the progressive visual reference guide (characters, clothing, physical state, locations, objects).
+4. Compile `work/image_briefs.json` and verify **0 quote mismatches** before generating images:
 ```bash
 python scripts/verify_quotes.py --chapters work/chapters_raw.json --briefs work/image_briefs.json
 ```
 
-### Phase 4–6: Batched Image Generation & Visual QC
-- Respect delegation/subagent limits (e.g., max **3** `image-generator` subagents in parallel; wait for all 3 to finish before launching the next batch).
-- Assign **1 illustration per `image-generator` subagent**, passing the approved 4-panel prompt and device style rules.
-- **Inspect every generated image directly** via image-reading tool against [qc-checklist.md](./references/qc-checklist.md). Reject and regenerate any image with:
-  - Wrong panel count (must be exactly 4)
-  - Speech bubbles, captions, or garbled text
-  - Color bleed (for B&W E-Ink targets)
-  - Narrative inaccuracy, missing key details, or future spoilers
-- **Quota (`429 RESOURCE_EXHAUSTED`) handling:** Never retry immediately on quota exhaustion. Record the exact completed/failed units and reset timestamp, and either schedule a one-shot wakeup timer past reset or pause cleanly for user confirmation.
+### Phase 4–6: Batched Image Generation & Independent QC
+- Respect delegation/subagent concurrency limits (e.g., max **3** `image-generator` subagents in parallel; wait for all 3 to finish before launching the next batch).
+- Assign **1 illustration per `image-generator` subagent** with only its approved brief, layout, and progressive references up to chapter `N`.
+- **Inspect every generated image directly** against the chapter text and [qc-checklist.md](./references/qc-checklist.md).
+- **Regeneration loop on FAIL:** Identify the exact error and source passage, fix the brief (remove unsupported details/text/spoilers), regenerate, and re-QC. Never insert rejected images.
+- **Quota (`429 RESOURCE_EXHAUSTED`) handling:** Never retry immediately. Log completed/failed units and the reset timestamp, then pause or schedule a one-shot wakeup past reset.
 
-### Phase 7: Fullscreen EPUB Compilation & Validation
-Once all target illustrations pass QC, run [compile_epub.py](./scripts/compile_epub.py):
+### Phase 7: Fullscreen EPUB Compilation, Validation & Delivery
+Compile and structurally validate the EPUB with [compile_epub.py](./scripts/compile_epub.py):
 ```bash
 python scripts/compile_epub.py "<input.epub>" \
   --briefs work/image_briefs.json \
   --images-map work/approved_images.json \
   --out "<output_illustrated.epub>"
 ```
-The compiler:
-- Converts each approved image to 8-bit grayscale JPEG sized to `1072x1448` (configurable via `--width`, `--height`, `--color`).
-- Creates one dedicated fullscreen XHTML page (`text/illus_<unit_id>.html`) per illustration (`margin:0; padding:0`, centered `max-width:100%; max-height:100%`).
-- Registers images and XHTML pages in `content.opf` `<manifest>` and inserts each illustration page immediately after its chapter in `<spine>`.
-- Validates ZIP structure (`mimetype` stored uncompressed first), XML/OPF well-formedness, and complete manifest/spine integrity.
+(Add `--color` for color EPUBs; default converts to 8-bit grayscale `1072x1448` JPEG for E-Ink.)
+
+Before delivering:
+- Run `epubcheck` if installed and report actual errors/warnings.
+- Verify **content preservation** (original chapter count, text, metadata, and TOC intact) and **visual rendering** (all 4 panels visible, aspect ratio preserved, clean chapter transitions).
+- Deliver the `.epub` directly in chat (never external cloud links) with a completion report:
+
+| Metric | Result |
+|---|---|
+| Chapters/sections identified | Count |
+| Illustration units completed | Count |
+| Images generated / approved / regenerated | Counts |
+| Panels per image | 4 |
+| EPUB insertion & original content preserved | Verified status |
+| EPUB validation | Actual tool/check result |
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---|---|
-| Subagent adds speech bubbles or narrative captions | Explicitly forbid text/captions/SFX in prompt; inspect every image and regenerate on violation |
-| Subtle color tints (green LEDs, warm sepia) in B&W prompts | Enforce strict monochrome grayscale in prompt AND convert to 8-bit grayscale (`L` mode) in `compile_epub.py` |
-| Subagent saves images to root artifact directory ignoring subfolder | Track exact returned file paths in `approved_images.json` rather than assuming subfolder paths |
-| Inserting illustration inside chapter HTML breaks Calibre page-break anchors | Keep original chapter HTML untouched; insert a dedicated XHTML page immediately after the chapter in `content.opf` `<spine>` |
-| Retrying immediately after `429` image quota error | Stop batch, log progress + reset time, and wait past reset before resuming |
+| Rigid 2×2 grid and identical medium shots every chapter | Vary panel proportions and camera angles (wide, close-up, OTS) per beat |
+| Subagent adds speech bubbles, captions, or color LEDs | Explicitly forbid text/color in prompt; inspect every image and regenerate on violation |
+| Passing future chapter context to analysts/artists | Pass only chapter `N` text + progressive references `1..N` |
+| Inserting `<img>` inside Calibre chapter HTML breaks page breaks | Keep original chapter HTML untouched; insert a dedicated XHTML page immediately after the chapter in `<spine>` |
+| Subagent saves images to root artifact dir instead of subdirs | Record exact returned file paths in `approved_images.json` |
