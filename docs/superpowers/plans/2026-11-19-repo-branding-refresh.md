@@ -51,9 +51,18 @@
 ### Task 3: Commit and publish the rename
 
 **Files:**
-- Update: GitHub repository slug and local `origin` URL.
+- Update: GitHub repository slug, About description, and local `origin` URL.
 
 - [x] Review the complete diff and stage only the approved design, plan, README, skill metadata, ignore rules, and showcase images.
-- [ ] Commit as `docs: make novel illustrator skill platform-neutral`.
-- [ ] Rename `NatBrian/epub-novel-illustrator` to `NatBrian/novel-illustrator`, update `origin`, and push the current `main` branch.
-- [ ] Verify the remote URL and pushed commit.
+- [x] Commit as `docs: make novel illustrator skill platform-neutral`.
+- [x] Rename `NatBrian/epub-novel-illustrator` to `NatBrian/novel-illustrator`, update its description and `origin`, and push the current `main` branch.
+- [x] Verify the remote URL and pushed commit.
+
+### Task 4: Publish the repository
+
+**Files:**
+- Update: GitHub repository visibility.
+
+- [x] Review tracked files and all committed history for credential-like values and generated EPUBs.
+- [x] Set repository visibility to public.
+- [x] Verify GitHub reports `PUBLIC` and the public `main` commit matches local `HEAD`.

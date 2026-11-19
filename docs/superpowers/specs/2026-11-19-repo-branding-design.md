@@ -13,13 +13,15 @@ Make this reusable EPUB illustration skill easy to understand and install from b
 ## Scope and constraints
 
 - Rename the GitHub repo to `novel-illustrator`; keep the local checkout directory unchanged.
+- Update the GitHub About description to identify Codex and Antigravity support.
 - Align the `SKILL.md` front matter name and README references with the new slug.
 - Rewrite README installation instructions for Codex and Antigravity using their current user and workspace skill paths.
 - Add two unchanged Chapter 1 illustrations under `docs/showcase/`, captioned with the novel and chapter, with descriptive alt text.
 - Remove blanket PNG and JPG ignores so the showcase images can be committed. Ignore timestamped production folders, work data, and EPUB outputs.
 - Keep the README professional and free of em dashes.
 - Do not modify the Python tools, illustration outputs, or skill workflow itself.
+- Make the repository public after checking tracked files and commit history for sensitive content.
 
 ## Completion
 
-Commit the README, skill name, ignore rules, showcase assets, and this short design record, then rename the GitHub repository, update `origin`, and push the requested branch. If GitHub reports the chosen slug is unavailable, pause before using an alternate public name.
+Commit the README, skill name, ignore rules, showcase assets, and this short design record, then rename the GitHub repository, update its About description and `origin`, push the requested branch, and make the repository public after the history review. If GitHub reports the chosen slug is unavailable, pause before using an alternate public name.
