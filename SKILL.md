@@ -1,5 +1,5 @@
 ---
-name: epub-novel-illustrator
+name: novel-illustrator
 description: >-
   Use when transforming an EPUB novel into an illustrated EPUB with per-chapter
   multi-panel artwork, source-grounded scene briefs, spoiler-free visual
@@ -7,7 +7,7 @@ description: >-
   illustration pages.
 ---
 
-# EPUB Novel Illustrator
+# Novel Illustrator
 
 Transform an EPUB novel into a source-faithful illustrated EPUB with **one 4-panel illustration per chapter or meaningful narrative section**, placed on its own dedicated fullscreen page after each unit.
 
